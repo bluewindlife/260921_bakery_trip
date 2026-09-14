@@ -131,3 +131,69 @@ footer { padding:12px 0 0; color:#817973; text-align:center; font-size:.67rem; }
 .fab.show { opacity:1; pointer-events:auto; transform:none; }
 @media (min-width:680px) { .shell { padding-left:24px; padding-right:24px; } .hero { margin-left:-24px; margin-right:-24px; } .hero-content { padding-left:34px; padding-right:34px; } .summary-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } .summary-card.wide { grid-column:span 2; } .gallery { grid-auto-columns:54%; } .shop-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .candidate-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto!important; transition:none!important; } }
+
+
+/* v0.3 — verified trip catalog additions */
+html, body { max-width: 100%; overflow-x: hidden; }
+main, section, article, .shop-body, .detail-box { min-width: 0; }
+p, li, .summary-value, .check-copy, .availability-note { overflow-wrap: anywhere; }
+a:focus-visible, button:focus-visible, input:focus-visible + .check-box { outline: 3px solid color-mix(in srgb, var(--accent-2) 75%, white); outline-offset: 3px; }
+
+.card-note { margin: 8px 0 0; color: var(--muted); font-size: .72rem; font-weight: 650; }
+.section-intro { margin: -5px 2px 14px; color: var(--muted); font-size: .75rem; }
+.status-grid { display: grid; gap: 8px; margin-top: 11px; }
+.status-card { display: grid; grid-template-columns: minmax(0,1fr); gap: 2px; padding: 12px 13px; border: 1px solid var(--line); border-left: 5px solid #8b837c; border-radius: 14px; background: var(--paper); box-shadow: 0 5px 15px rgba(55,44,35,.04); }
+.status-card strong { font-size: .78rem; }
+.status-card span { color: var(--ink); font-size: .74rem; font-weight: 850; }
+.status-card small { color: var(--muted); font-size: .66rem; }
+.status-card.planned { border-left-color: var(--warn); }
+.status-card.open { border-left-color: #66816f; }
+.status-card.confirmed { border-left-color: var(--good); background: #f3f8f4; }
+
+.route-alert { margin-bottom: 13px; padding: 13px 14px; border: 1px solid rgba(147,101,40,.18); border-radius: 16px; background: #fff7e7; color: #695331; font-size: .75rem; }
+.route-alert strong { color: #77541e; }
+.live-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.plan-kind { flex: 0 0 auto; }
+.plan-time { min-width: 0; }
+.plan-title, .shop-body h3 { overflow-wrap: anywhere; }
+
+.gallery { overscroll-behavior-inline: contain; scroll-padding-inline: 8px; }
+.gallery.is-single { grid-auto-columns: 100%; }
+.gallery figure { isolation: isolate; }
+.gallery figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; line-height: 1.45; }
+.photo-tag { display: inline-flex; flex: 0 0 auto; align-items: center; min-height: 18px; padding: 2px 6px; border-radius: 999px; color: #fff; background: #59645e; font-size: .56rem; font-weight: 950; letter-spacing: .02em; }
+.photo-tag.good { color: #173f2c; background: #d7eadc; }
+.photo-tag.warn { color: #684915; background: #f7dca8; }
+
+.shop-status.planned { color: #765624; background: #fff0cf; }
+.shop-status.open { color: #385f49; background: #e5f0e9; }
+.shop-status.confirmed { color: #23633e; background: #dff1e5; }
+.availability-note { margin-top: 12px; padding: 10px 11px; border: 1px solid var(--line); border-radius: 12px; font-size: .72rem; line-height: 1.55; }
+.availability-note.planned { color: #6f542c; background: #fff7e6; border-color: rgba(147,101,40,.2); }
+.availability-note.open { color: #3f5a4a; background: #eef5f0; }
+.availability-note.confirmed { color: #2f5a3f; background: #e9f5ec; border-color: rgba(63,119,88,.2); }
+.availability-foot { margin-top: 9px; padding-top: 8px; border-top: 1px dashed var(--line); color: var(--muted); font-size: .67rem; }
+.source-stamp { margin-top: 11px; color: var(--muted); font-size: .63rem; text-align: right; }
+.candidate-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.action[href^="tel:"]::before { content: "☎"; }
+.source-list a { overflow-wrap: anywhere; }
+
+@media (min-width: 560px) {
+  .status-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (min-width: 680px) {
+  .gallery figure { height: 285px; }
+}
+@media (max-width: 379px) {
+  .shell { padding-left: 12px; padding-right: 12px; }
+  .hero { margin-left: -12px; margin-right: -12px; }
+  .hero-content { padding-left: 18px; padding-right: 18px; }
+  .quick-nav { gap: 6px; }
+  .quick-nav a { min-height: 60px; font-size: .66rem; }
+  .status-row { gap: 7px; }
+  .status-title { font-size: .78rem; }
+  .status-meta { font-size: .62rem; }
+  .gallery { grid-auto-columns: 91%; }
+  .gallery figure { height: 228px; }
+  .shop-body { padding: 15px; }
+}

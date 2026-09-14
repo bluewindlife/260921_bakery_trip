@@ -20,6 +20,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,3 +37,50 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  verify:
+    name: Verify published page
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+      VERIFY_OUTPUT_DIR: verification-artifacts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Wait for v0.3 at public URL
+        shell: bash
+        run: |
+          for attempt in {1..24}; do
+            if curl --fail --silent --show-error --location "${PAGE_URL}?deploy=${GITHUB_SHA}-${attempt}" | grep --quiet 'data-version="v0.3"'; then
+              echo "Published v0.3 is available."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Published page did not expose v0.3 within 120 seconds." >&2
+          exit 1
+
+      - name: Locate Chrome
+        shell: bash
+        run: |
+          chrome_path="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "${chrome_path}"
+          echo "CHROME_PATH=${chrome_path}" >> "${GITHUB_ENV}"
+
+      - name: Install browser driver
+        run: npm install --no-save --ignore-scripts puppeteer-core@24.16.0
+
+      - name: Verify mobile and tablet layouts
+        run: node .github/scripts/verify-page.mjs "${PAGE_URL}"
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-page-verification-${{ github.run_number }}
+          path: verification-artifacts
+          if-no-files-found: warn
+          retention-days: 14
