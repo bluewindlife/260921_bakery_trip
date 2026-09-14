@@ -25,20 +25,26 @@
     if (meta) meta.textContent = `準備 ${done}/${checks.length}`;
   }
   refreshStatus();
+
   document.querySelectorAll('img[data-external]').forEach((img) => {
     img.addEventListener('error', () => {
       const figure = img.closest('figure');
-      if (!figure) return;
-      figure.classList.add('image-failed');
-      const caption = figure.querySelector('figcaption');
-      if (caption) caption.textContent = '外部画像を読み込めませんでした。公式リンクから確認してください。';
+      if (figure) {
+        const gallery = figure.closest('.gallery');
+        figure.remove();
+        if (gallery && !gallery.querySelector('figure')) gallery.remove();
+        return;
+      }
+      img.remove();
     }, { once: true });
   });
+
   const fab = document.querySelector('[data-top]');
   const toggleFab = () => fab?.classList.toggle('show', scrollY > 700);
   addEventListener('scroll', toggleFab, { passive: true });
   toggleFab();
   fab?.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+
   const plans = [...document.querySelectorAll('[data-plan-time]')];
   const tripDate = document.body.dataset.tripDate;
   const statusTitle = document.querySelector('[data-status-title]');
