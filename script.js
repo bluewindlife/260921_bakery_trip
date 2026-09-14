@@ -71,8 +71,18 @@
       return;
     }
     seenSources.add(source);
-    img.addEventListener('error', () => removeFailedImage(img), { once: true });
-    if (img.complete && img.naturalWidth === 0) removeFailedImage(img);
+    const failureTimer = setTimeout(() => {
+      if (!img.complete || img.naturalWidth === 0) removeFailedImage(img);
+    }, 10000);
+    img.addEventListener('load', () => clearTimeout(failureTimer), { once: true });
+    img.addEventListener('error', () => {
+      clearTimeout(failureTimer);
+      removeFailedImage(img);
+    }, { once: true });
+    if (img.complete) {
+      clearTimeout(failureTimer);
+      if (img.naturalWidth === 0) removeFailedImage(img);
+    }
   });
   document.querySelectorAll('.gallery').forEach(refreshGallery);
 

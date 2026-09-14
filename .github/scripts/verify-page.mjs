@@ -32,6 +32,30 @@ try {
       isMobile: viewport.name === 'mobile',
       hasTouch: viewport.name === 'mobile'
     });
+    await page.setUserAgent(
+      viewport.name === 'mobile'
+        ? 'Mozilla/5.0 (Linux; Android 15; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36'
+        : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
+    );
+    await page.setExtraHTTPHeaders({ 'Accept-Language': 'ja-JP,ja;q=0.9,en;q=0.7' });
+
+    const imageNetworkIssues = [];
+    page.on('requestfailed', (request) => {
+      if (request.resourceType() === 'image') {
+        imageNetworkIssues.push({
+          url: request.url(),
+          error: request.failure()?.errorText || 'request failed'
+        });
+      }
+    });
+    page.on('response', (response) => {
+      if (response.request().resourceType() === 'image' && response.status() >= 400) {
+        imageNetworkIssues.push({
+          url: response.url(),
+          error: `HTTP ${response.status()}`
+        });
+      }
+    });
 
     const url = new URL(pageUrl);
     url.searchParams.set('verify', `${Date.now()}-${viewport.name}`);
@@ -118,13 +142,14 @@ try {
         overflowingElements,
         hasConfirmedElBethel: document.body.innerText.includes('9/21 営業告知済み'),
         hasUnconfirmedProductLabels: document.body.innerText.includes('9/21在庫・価格は未確認'),
-        cssCacheBuster: document.querySelector('link[rel="stylesheet"]')?.href.includes('v=20260915-01') || false,
-        jsCacheBuster: document.querySelector('script[src]')?.src.includes('v=20260915-01') || false
+        cssCacheBuster: document.querySelector('link[rel="stylesheet"]')?.href.includes('v=20260915-02') || false,
+        jsCacheBuster: document.querySelector('script[src]')?.src.includes('v=20260915-02') || false
       };
     });
 
     report.viewport = viewport.name;
     report.pageErrors = pageErrors;
+    report.imageNetworkIssues = imageNetworkIssues;
     reports.push(report);
 
     if (viewport.name === 'mobile') {
