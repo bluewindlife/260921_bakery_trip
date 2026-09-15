@@ -63,6 +63,36 @@
     img.remove();
   };
 
+  const monitorImage = (img) => {
+    let failureTimer;
+    const clearTimer = () => clearTimeout(failureTimer);
+    const rejectImage = () => {
+      clearTimer();
+      removeFailedImage(img);
+    };
+
+    img.addEventListener('load', clearTimer, { once: true });
+    img.addEventListener('error', rejectImage, { once: true });
+    failureTimer = setTimeout(() => {
+      if (!img.complete || img.naturalWidth === 0) rejectImage();
+    }, 12000);
+
+    if (img.complete) {
+      clearTimer();
+      if (img.naturalWidth === 0) removeFailedImage(img);
+    }
+  };
+
+  const lazyObserver = 'IntersectionObserver' in window
+    ? new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          observer.unobserve(entry.target);
+          monitorImage(entry.target);
+        });
+      }, { rootMargin: '1000px 0px' })
+    : null;
+
   const seenSources = new Set();
   document.querySelectorAll('img[data-external]').forEach((img) => {
     const source = img.currentSrc || img.src;
@@ -71,17 +101,11 @@
       return;
     }
     seenSources.add(source);
-    const failureTimer = setTimeout(() => {
-      if (!img.complete || img.naturalWidth === 0) removeFailedImage(img);
-    }, 10000);
-    img.addEventListener('load', () => clearTimeout(failureTimer), { once: true });
-    img.addEventListener('error', () => {
-      clearTimeout(failureTimer);
-      removeFailedImage(img);
-    }, { once: true });
-    if (img.complete) {
-      clearTimeout(failureTimer);
-      if (img.naturalWidth === 0) removeFailedImage(img);
+
+    if (img.loading === 'lazy' && lazyObserver && !img.complete) {
+      lazyObserver.observe(img);
+    } else {
+      monitorImage(img);
     }
   });
   document.querySelectorAll('.gallery').forEach(refreshGallery);

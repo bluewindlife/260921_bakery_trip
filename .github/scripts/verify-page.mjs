@@ -68,12 +68,13 @@ try {
 
     await page.evaluate(async () => {
       const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-      for (let y = 0; y < document.documentElement.scrollHeight; y += 520) {
-        window.scrollTo(0, y);
-        await delay(90);
+      const images = [...document.querySelectorAll('img[data-external]')];
+      for (const image of images) {
+        image.scrollIntoView({ block: 'center', inline: 'nearest' });
+        await delay(300);
       }
       window.scrollTo(0, 0);
-      await delay(600);
+      await delay(900);
     });
     await page.waitForFunction(
       () => [...document.images].every((image) => image.complete),
@@ -132,6 +133,12 @@ try {
         bodyWidth: document.body.scrollWidth,
         shopCards: document.querySelectorAll('.shop-card').length,
         visibleExternalImages: images.length,
+        imageSources: images.map((image) => ({ alt: image.alt, src: image.currentSrc || image.src })),
+        mediaSourceCounts: {
+          yamanashi: imageSources.filter((source) => source.includes('visit-yamanashi.com/')).length,
+          sumu: imageSources.filter((source) => source.includes('8-sumu.a-def.com/')).length
+        },
+        heroImageVisible: Boolean(document.querySelector('.hero-media img[data-external]')),
         galleryCounts,
         brokenImages,
         duplicateSources: [...new Set(duplicateSources)],
@@ -141,9 +148,9 @@ try {
         cardGalleryOverlaps: overlaps,
         overflowingElements,
         hasConfirmedElBethel: document.body.innerText.includes('9/21 営業告知済み'),
-        hasUnconfirmedProductLabels: document.body.innerText.includes('9/21在庫・価格は未確認'),
-        cssCacheBuster: document.querySelector('link[rel="stylesheet"]')?.href.includes('v=20260915-02') || false,
-        jsCacheBuster: document.querySelector('script[src]')?.src.includes('v=20260915-02') || false
+        hasUnconfirmedProductLabels: document.querySelectorAll('[data-availability="unconfirmed"]').length >= 2,
+        cssCacheBuster: document.querySelector('link[rel="stylesheet"]')?.href.includes('v=20260915-03') || false,
+        jsCacheBuster: document.querySelector('script[src]')?.src.includes('v=20260915-03') || false
       };
     });
 
@@ -171,6 +178,8 @@ for (const report of reports) {
   if (report.documentWidth > report.viewportWidth + 1 || report.bodyWidth > report.viewportWidth + 1) failures.push(`${report.viewport}: horizontal page overflow`);
   if (report.shopCards !== 3) failures.push(`${report.viewport}: expected 3 shop cards`);
   if (report.visibleExternalImages < 7) failures.push(`${report.viewport}: fewer than 7 visible photos`);
+  if (!report.heroImageVisible) failures.push(`${report.viewport}: hero photo missing`);
+  if (report.mediaSourceCounts.yamanashi < 2 || report.mediaSourceCounts.sumu < 2) failures.push(`${report.viewport}: fallback media photos missing`);
   if (report.galleryCounts.length !== 3 || report.galleryCounts.some((count) => count < 2)) failures.push(`${report.viewport}: a shop has fewer than 2 visible photos`);
   if (report.brokenImages.length) failures.push(`${report.viewport}: broken visible images`);
   if (report.duplicateSources.length) failures.push(`${report.viewport}: duplicate image sources`);

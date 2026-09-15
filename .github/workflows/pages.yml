@@ -56,8 +56,8 @@ jobs:
           for attempt in {1..24}; do
             if page_html="$(curl --fail --silent --show-error --location "${PAGE_URL}?deploy=${GITHUB_SHA}-${attempt}")"; then
               if grep --fixed-strings --quiet 'data-version="v0.3"' <<< "${page_html}" \
-                && grep --fixed-strings --quiet 'v=20260915-02' <<< "${page_html}"; then
-                echo "Published v0.3 (20260915-02) is available."
+                && grep --fixed-strings --quiet 'v=20260915-03' <<< "${page_html}"; then
+                echo "Published v0.3 (20260915-03) is available."
                 exit 0
               fi
             fi
